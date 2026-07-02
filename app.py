@@ -24,15 +24,6 @@ menu = st.sidebar.radio(
     )
 )
 
-if menu == "Home":
-
-    st.title("📱 Google Play Store Dashboard")
-    st.write("Internship Project Dashboard")
-
-    st.success("Dataset Loaded Successfully")
-
-    st.subheader("Dataset Preview")
-    st.dataframe(df.head())
 
 # Load Dataset
 @st.cache_data
@@ -42,10 +33,11 @@ def load_data():
 
 df = load_data()
 
-st.success("Dataset Loaded Successfully")
+if menu == "Home":
 
-st.subheader("Dataset Preview")
-st.dataframe(df.head())
+    st.title("📱 Google Play Store Dashboard")
+    st.write("Internship Project Dashboard")
+
 
 # -------------------- Data Cleaning --------------------
 
@@ -94,7 +86,7 @@ df["Last Updated"] = pd.to_datetime(
 )
 
 if menu == "Task 1":
-
+[
     st.header("📈 Task 1 : App Installs Analysis Dashboard")
 
 filtered_df = df[
