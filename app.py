@@ -87,41 +87,61 @@ df["Last Updated"] = pd.to_datetime(
 
 if menu == "Task 1":
 
-    st.header("📈 Task 1 : App Installs Analysis Dashboard")
+    st.header("📊 Task 1 : App Installs Analysis Dashboard")
 
-    filtered_df = df[
-        (df["Rating"] >= 4.0)
-    ]
+    from datetime import datetime
+    import pytz
 
-    top_categories = (
-        filtered_df.groupby("Category")["Installs"]
-        .sum()
-        .nlargest(10)
-        .index
-    )
+    india = pytz.timezone("Asia/Kolkata")
+    current_time = datetime.now(india).time()
 
-    top_df = filtered_df[
-        filtered_df["Category"].isin(top_categories)
-    ]
+    start_time = datetime.strptime("15:00", "%H:%M").time()
+    end_time = datetime.strptime("17:00", "%H:%M").time()
 
-    chart_data = (
-        top_df.groupby("Category")
-        .agg(
-            Average_Rating=("Rating", "mean"),
-            Total_Reviews=("Reviews", "sum")
+    if start_time <= current_time <= end_time:
+
+        filtered_df = df[
+            (df["Rating"] >= 4.0) &
+            (df["Size_MB"] >= 10) &
+            (df["Last Updated"].dt.month == 1)
+        ]
+
+        top_categories = (
+            filtered_df.groupby("Category")["Installs"]
+            .sum()
+            .nlargest(10)
+            .index
         )
-        .reset_index()
-    )
 
-    fig = px.bar(
-        chart_data,
-        x="Category",
-        y=["Average_Rating", "Total_Reviews"],
-        barmode="group",
-        title="Average Rating and Total Reviews"
-    )
+        top_df = filtered_df[
+            filtered_df["Category"].isin(top_categories)
+        ]
 
-    st.plotly_chart(fig, use_container_width=True)
+        chart_data = (
+            top_df.groupby("Category")
+            .agg(
+                Average_Rating=("Rating", "mean"),
+                Total_Reviews=("Reviews", "sum")
+            )
+            .reset_index()
+        )
+
+        fig = px.bar(
+            chart_data,
+            x="Category",
+            y=["Average_Rating", "Total_Reviews"],
+            barmode="group",
+            title="Average Rating vs Total Reviews"
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+    else:
+
+        st.warning(
+            " This chart is available only between "
+            "3:00 PM IST and 5:00 PM IST."
+        )
 
 if menu == "Task 2":
     st.header("📊 Task 2")
