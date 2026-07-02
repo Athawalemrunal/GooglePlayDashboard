@@ -86,46 +86,42 @@ df["Last Updated"] = pd.to_datetime(
 )
 
 if menu == "Task 1":
-[
+
     st.header("📈 Task 1 : App Installs Analysis Dashboard")
 
-filtered_df = df[
-    (df["Rating"] >= 4.0)
-]
+    filtered_df = df[
+        (df["Rating"] >= 4.0)
+    ]
 
-top_categories = (
-    filtered_df.groupby("Category")["Installs"]
-    .sum()
-    .nlargest(10)
-    .index
-)
-
-top_df = filtered_df[
-    filtered_df["Category"].isin(top_categories)
-]
-
-chart_data = (
-    top_df.groupby("Category")
-    .agg(
-        Average_Rating=("Rating", "mean"),
-        Total_Reviews=("Reviews", "sum")
+    top_categories = (
+        filtered_df.groupby("Category")["Installs"]
+        .sum()
+        .nlargest(10)
+        .index
     )
-    .reset_index()
-)
 
-fig = px.bar(
-    chart_data,
-    x="Category",
-    y=["Average_Rating", "Total_Reviews"],
-    barmode="group",
-    title="Average Rating and Total Reviews"
-)
+    top_df = filtered_df[
+        filtered_df["Category"].isin(top_categories)
+    ]
 
-st.plotly_chart(
-    fig,
-    use_container_width=True
-)
+    chart_data = (
+        top_df.groupby("Category")
+        .agg(
+            Average_Rating=("Rating", "mean"),
+            Total_Reviews=("Reviews", "sum")
+        )
+        .reset_index()
+    )
 
+    fig = px.bar(
+        chart_data,
+        x="Category",
+        y=["Average_Rating", "Total_Reviews"],
+        barmode="group",
+        title="Average Rating and Total Reviews"
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
 
 if menu == "Task 2":
     st.header("📊 Task 2")
