@@ -73,10 +73,6 @@ st.header("Task 1 : App Installs Analysis Dashboard")
 
 filtered_df = df[
     (df["Rating"] >= 4.0)
-    &
-    (df["Size_MB"] >= 10)
-    &
-    (df["Last Updated"].dt.month == 1)
 ]
 
 top_categories = (
