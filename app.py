@@ -226,6 +226,242 @@ if menu == "Task 3":
     st.header("📈 Task 3")
     st.info("Coming Soon")
 
+if menu == "Task 3":
+
+    st.header("📈 Task 3 : Average Installs vs Revenue")
+
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    import plotly.graph_objects as go
+
+    current_time = datetime.now(
+        ZoneInfo("Asia/Kolkata")
+    ).time()
+
+    start_time = datetime.strptime(
+        "13:00",
+        "%H:%M"
+    ).time()
+
+    end_time = datetime.strptime(
+        "14:00",
+        "%H:%M"
+    ).time()
+
+    if start_time <= current_time <= end_time:
+
+        task3_df = df.copy()
+
+        # -------------------------
+        # Clean Installs
+        # -------------------------
+        task3_df["Installs"] = (
+            task3_df["Installs"]
+            .astype(str)
+            .str.replace(",", "", regex=False)
+            .str.replace("+", "", regex=False)
+        )
+
+        task3_df["Installs"] = pd.to_numeric(
+            task3_df["Installs"],
+            errors="coerce"
+        )
+
+        # -------------------------
+        # Clean Price
+        # -------------------------
+        task3_df["Price"] = (
+            task3_df["Price"]
+            .astype(str)
+            .str.replace("$", "", regex=False)
+        )
+
+        task3_df["Price"] = pd.to_numeric(
+            task3_df["Price"],
+            errors="coerce"
+        )
+
+        # Revenue
+        task3_df["Revenue"] = (
+            task3_df["Price"]
+            * task3_df["Installs"]
+        )
+
+        # -------------------------
+        # Android Version
+        # -------------------------
+        task3_df["Android Ver"] = (
+            task3_df["Android Ver"]
+            .astype(str)
+            .str.extract(r"(\d+\.\d+)")
+        )
+
+        task3_df["Android Ver"] = pd.to_numeric(
+            task3_df["Android Ver"],
+            errors="coerce"
+        )
+
+        # -------------------------
+        # Size in MB
+        # -------------------------
+        def convert_size_task3(size):
+
+            if pd.isna(size):
+                return None
+
+            size = str(size)
+
+            if size.endswith("M"):
+                return float(size[:-1])
+
+            elif size.endswith("k"):
+                return float(size[:-1]) / 1024
+
+            return None
+
+        task3_df["Size_MB"] = task3_df["Size"].apply(
+            convert_size_task3
+        )
+
+        # -------------------------
+        # App Name Length
+        # -------------------------
+        task3_df = task3_df[
+            task3_df["App"]
+            .astype(str)
+            .str.len() <= 30
+        ]
+
+        # -------------------------
+        # Required Filters
+        # -------------------------
+        task3_df = task3_df[
+
+            (task3_df["Installs"] >= 10000)
+
+            &
+
+            (task3_df["Revenue"] >= 10000)
+
+            &
+
+            (task3_df["Android Ver"] > 4.0)
+
+            &
+
+            (task3_df["Size_MB"] > 15)
+
+            &
+
+            (task3_df["Content Rating"] == "Everyone")
+
+        ]
+
+        # -------------------------
+        # Top 3 Categories
+        # -------------------------
+        top3 = (
+
+            task3_df
+            .groupby("Category")["Installs"]
+            .sum()
+            .nlargest(3)
+            .index
+
+        )
+
+        task3_df = task3_df[
+            task3_df["Category"].isin(top3)
+        ]
+
+        # -------------------------
+        # Average Installs & Revenue
+        # -------------------------
+        result = (
+
+            task3_df
+            .groupby("Type")
+            .agg(
+
+                Average_Installs=("Installs", "mean"),
+
+                Average_Revenue=("Revenue", "mean")
+
+            )
+            .reset_index()
+
+        )
+
+        # -------------------------
+        # Dual Axis Chart
+        # -------------------------
+
+        fig = go.Figure()
+
+        fig.add_bar(
+
+            x=result["Type"],
+
+            y=result["Average_Installs"],
+
+            name="Average Installs"
+
+        )
+
+        fig.add_scatter(
+
+            x=result["Type"],
+
+            y=result["Average_Revenue"],
+
+            mode="lines+markers",
+
+            name="Average Revenue",
+
+            yaxis="y2"
+
+        )
+
+        fig.update_layout(
+
+            title="Average Installs vs Revenue (Free vs Paid)",
+
+            xaxis_title="App Type",
+
+            yaxis=dict(
+
+                title="Average Installs"
+
+            ),
+
+            yaxis2=dict(
+
+                title="Average Revenue ($)",
+
+                overlaying="y",
+
+                side="right"
+
+            ),
+
+            legend_title="Metrics"
+
+        )
+
+        st.plotly_chart(
+
+            fig,
+
+            use_container_width=True
+
+        )
+
+    else:
+
+        st.info(
+            "⏰ This graph is available only between 1:00 PM and 2:00 PM IST."
+        )
+
 if menu == "Task 4":
     st.header("📉 Task 4")
     st.info("Coming Soon")
