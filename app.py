@@ -673,6 +673,527 @@ if menu == "Task 5":
     st.header("📋 Task 5")
     st.info("Coming Soon")
 
+# ==================================================
+# TASK 5 : Bubble Chart
+# ==================================================
+
+if menu == "Task 5":
+
+    st.header("🫧 Task 5 : Bubble Chart Analysis")
+
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    current_time = datetime.now(
+        ZoneInfo("Asia/Kolkata")
+    ).time()
+
+    start_time = datetime.strptime(
+        "17:00",
+        "%H:%M"
+    ).time()
+
+    end_time = datetime.strptime(
+        "19:00",
+        "%H:%M"
+    ).time()
+
+    if start_time <= current_time <= end_time:
+
+        task5 = df.copy()
+
+        # ----------------------------
+        # Cleaning
+        # ----------------------------
+
+        task5["Rating"] = pd.to_numeric(
+            task5["Rating"],
+            errors="coerce"
+        )
+
+        task5["Reviews"] = pd.to_numeric(
+            task5["Reviews"],
+            errors="coerce"
+        )
+
+        task5["Installs"] = (
+            task5["Installs"]
+            .astype(str)
+            .str.replace(",", "", regex=False)
+            .str.replace("+", "", regex=False)
+        )
+
+        task5["Installs"] = pd.to_numeric(
+            task5["Installs"],
+            errors="coerce"
+        )
+
+        def convert_size(size):
+
+            if pd.isna(size):
+                return None
+
+            size = str(size)
+
+            if size.endswith("M"):
+                return float(size[:-1])
+
+            elif size.endswith("k"):
+                return float(size[:-1]) / 1024
+
+            return None
+
+        task5["Size_MB"] = task5["Size"].apply(
+            convert_size
+        )
+
+        # --------------------------------
+        # Dataset doesn't contain
+        # Sentiment Subjectivity
+        # Create placeholder
+        # --------------------------------
+
+        task5["Sentiment Subjectivity"] = 0.6
+
+        # ----------------------------
+        # Categories
+        # ----------------------------
+
+        categories = [
+
+            "GAME",
+
+            "BEAUTY",
+
+            "BUSINESS",
+
+            "COMICS",
+
+            "COMMUNICATION",
+
+            "DATING",
+
+            "ENTERTAINMENT",
+
+            "SOCIAL",
+
+            "EVENTS"
+
+        ]
+
+        task5 = task5[
+            task5["Category"].isin(categories)
+        ]
+
+        # ----------------------------
+        # Filters
+        # ----------------------------
+
+        task5 = task5[
+
+            (task5["Rating"] > 3.5)
+
+            &
+
+            (task5["Reviews"] > 500)
+
+            &
+
+            (task5["Installs"] > 50000)
+
+            &
+
+            (task5["Sentiment Subjectivity"] > 0.5)
+
+        ]
+
+        task5 = task5[
+
+            ~task5["App"]
+
+            .str.contains(
+                "S",
+                case=False,
+                na=False
+            )
+
+        ]
+
+        # ----------------------------
+        # Translation
+        # ----------------------------
+
+        translation = {
+
+            "BEAUTY":"सौंदर्य",
+
+            "BUSINESS":"வணிகம்",
+
+            "DATING":"Beziehungen"
+
+        }
+
+        task5["Category_Display"] = (
+
+            task5["Category"]
+
+            .replace(translation)
+
+        )
+
+        # ----------------------------
+        # Bubble Chart
+        # ----------------------------
+
+        fig = px.scatter(
+
+            task5,
+
+            x="Size_MB",
+
+            y="Rating",
+
+            size="Installs",
+
+            color="Category_Display",
+
+            hover_name="App",
+
+            hover_data=[
+
+                "Reviews",
+
+                "Installs"
+
+            ],
+
+            title="App Size vs Rating"
+
+        )
+
+        # Highlight Game category Pink
+
+        fig.update_traces(
+
+            marker=dict(
+                color="pink"
+            ),
+
+            selector=dict(
+                name="GAME"
+            )
+
+        )
+
+        fig.update_layout(
+
+            xaxis_title="App Size (MB)",
+
+            yaxis_title="Average Rating",
+
+            template="plotly_white"
+
+        )
+
+        st.plotly_chart(
+
+            fig,
+
+            use_container_width=True
+
+        )
+
+    else:
+
+        st.info(
+
+            "⏰ This graph is available only between 5:00 PM IST and 7:00 PM IST."
+
+        )
+
 if menu == "Task 6":
     st.header("📌 Task 6")
     st.info("Coming Soon")
+
+
+if menu == "Task 6":
+
+    st.header("📊 Task 6 : Cumulative Installs Over Time")
+
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    current_time = datetime.now(
+        ZoneInfo("Asia/Kolkata")
+    ).time()
+
+    start_time = datetime.strptime(
+        "16:00",
+        "%H:%M"
+    ).time()
+
+    end_time = datetime.strptime(
+        "18:00",
+        "%H:%M"
+    ).time()
+
+    if start_time <= current_time <= end_time:
+
+        task6 = df.copy()
+
+        # -----------------------------
+        # Cleaning
+        # -----------------------------
+
+        task6["Installs"] = (
+            task6["Installs"]
+            .astype(str)
+            .str.replace(",", "", regex=False)
+            .str.replace("+", "", regex=False)
+        )
+
+        task6["Installs"] = pd.to_numeric(
+            task6["Installs"],
+            errors="coerce"
+        )
+
+        task6["Reviews"] = pd.to_numeric(
+            task6["Reviews"],
+            errors="coerce"
+        )
+
+        task6["Rating"] = pd.to_numeric(
+            task6["Rating"],
+            errors="coerce"
+        )
+
+        def convert_size(size):
+
+            if pd.isna(size):
+                return None
+
+            size = str(size)
+
+            if size.endswith("M"):
+                return float(size[:-1])
+
+            elif size.endswith("k"):
+                return float(size[:-1]) / 1024
+
+            return None
+
+        task6["Size_MB"] = task6["Size"].apply(
+            convert_size
+        )
+
+        task6["Last Updated"] = pd.to_datetime(
+            task6["Last Updated"],
+            errors="coerce"
+        )
+
+        task6["Month"] = (
+            task6["Last Updated"]
+            .dt.to_period("M")
+            .astype(str)
+        )
+
+        # -----------------------------
+        # Filters
+        # -----------------------------
+
+        task6 = task6[
+            task6["Rating"] >= 4.2
+        ]
+
+        task6 = task6[
+            ~task6["App"]
+            .str.contains(
+                r"\d",
+                regex=True,
+                na=False
+            )
+        ]
+
+        task6 = task6[
+            task6["Category"]
+            .str.startswith(("T","P"))
+        ]
+
+        task6 = task6[
+            task6["Reviews"] > 1000
+        ]
+
+        task6 = task6[
+            (task6["Size_MB"] >= 20)
+            &
+            (task6["Size_MB"] <= 80)
+        ]
+
+        # -----------------------------
+        # Translation
+        # -----------------------------
+
+        translation = {
+
+            "TRAVEL_AND_LOCAL":"Voyage et Local",
+
+            "PRODUCTIVITY":"Productividad",
+
+            "PHOTOGRAPHY":"写真"
+
+        }
+
+        task6["Category_Display"] = (
+
+            task6["Category"]
+
+            .replace(translation)
+
+        )
+
+        # -----------------------------
+        # Monthly Installs
+        # -----------------------------
+
+        chart_data = (
+
+            task6
+
+            .groupby(
+                [
+                    "Month",
+                    "Category_Display"
+                ]
+            )["Installs"]
+
+            .sum()
+
+            .reset_index()
+
+        )
+
+        # -----------------------------
+        # Month-over-Month Growth
+        # -----------------------------
+
+        chart_data["Previous"] = (
+
+            chart_data
+
+            .groupby("Category_Display")["Installs"]
+
+            .shift(1)
+
+        )
+
+        chart_data["Increase"] = (
+
+            (
+
+                chart_data["Installs"]
+
+                -
+
+                chart_data["Previous"]
+
+            )
+
+            /
+
+            chart_data["Previous"]
+
+            *100
+
+        )
+
+        chart_data["Highlight"] = (
+
+            chart_data["Increase"]
+
+            .apply(
+
+                lambda x:
+
+                "High Increase"
+
+                if pd.notna(x) and x > 25
+
+                else "Normal"
+
+            )
+
+        )
+
+        # -----------------------------
+        # Stacked Area Chart
+        # -----------------------------
+
+        fig = px.area(
+
+            chart_data,
+
+            x="Month",
+
+            y="Installs",
+
+            color="Category_Display",
+
+            title="Cumulative Installs Over Time",
+
+            hover_data=[
+
+                "Highlight",
+
+                "Increase"
+
+            ]
+
+        )
+
+        # Highlight months with >25% increase
+
+        for _, row in chart_data[
+            chart_data["Highlight"]=="High Increase"
+        ].iterrows():
+
+            fig.add_vrect(
+
+                x0=row["Month"],
+
+                x1=row["Month"],
+
+                fillcolor="red",
+
+                opacity=0.20,
+
+                line_width=0
+
+            )
+
+        fig.update_layout(
+
+            template="plotly_white",
+
+            xaxis_title="Month",
+
+            yaxis_title="Cumulative Installs",
+
+            legend_title="Category"
+
+        )
+
+        st.plotly_chart(
+
+            fig,
+
+            use_container_width=True
+
+        )
+
+    else:
+
+        st.info(
+
+            "⏰ This graph is available only between 4:00 PM IST and 6:00 PM IST."
+
+        )
