@@ -466,6 +466,209 @@ if menu == "Task 4":
     st.header("📉 Task 4")
     st.info("Coming Soon")
 
+if menu == "Task 4":
+
+    st.header("📈 Task 4 : Monthly Install Trend")
+
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    import plotly.express as px
+
+    current_time = datetime.now(
+        ZoneInfo("Asia/Kolkata")
+    ).time()
+
+    start_time = datetime.strptime(
+        "18:00",
+        "%H:%M"
+    ).time()
+
+    end_time = datetime.strptime(
+        "21:00",
+        "%H:%M"
+    ).time()
+
+    if start_time <= current_time <= end_time:
+
+        task4 = df.copy()
+
+        # -----------------------------
+        # Clean Data
+        # -----------------------------
+        task4["Installs"] = (
+            task4["Installs"]
+            .astype(str)
+            .str.replace(",", "", regex=False)
+            .str.replace("+", "", regex=False)
+        )
+
+        task4["Installs"] = pd.to_numeric(
+            task4["Installs"],
+            errors="coerce"
+        )
+
+        task4["Reviews"] = pd.to_numeric(
+            task4["Reviews"],
+            errors="coerce"
+        )
+
+        task4 = task4.dropna(
+            subset=["Category","App","Installs","Reviews"]
+        )
+
+        # -----------------------------
+        # Create Monthly Timeline
+        # -----------------------------
+        task4["Date"] = pd.date_range(
+            start="2020-01-01",
+            periods=len(task4),
+            freq="D"
+        )
+
+        task4["Month"] = (
+            task4["Date"]
+            .dt.to_period("M")
+            .astype(str)
+        )
+
+        # -----------------------------
+        # Filters
+        # -----------------------------
+        task4 = task4[
+            task4["Category"]
+            .str.startswith(("B","C","E"))
+        ]
+
+        task4 = task4[
+            ~task4["App"]
+            .str.startswith(("X","Y","Z"))
+        ]
+
+        task4 = task4[
+            ~task4["App"]
+            .str.contains(
+                "S",
+                case=False,
+                na=False
+            )
+        ]
+
+        task4 = task4[
+            task4["Reviews"] > 500
+        ]
+
+        # -----------------------------
+        # Translation
+        # -----------------------------
+        translation = {
+
+            "BEAUTY":"सौंदर्य",
+
+            "BUSINESS":"வணிகம்",
+
+            "DATING":"Verabredung"
+
+        }
+
+        task4["Category"] = (
+            task4["Category"]
+            .replace(translation)
+        )
+
+        # -----------------------------
+        # Monthly Installs
+        # -----------------------------
+        monthly = (
+
+            task4
+
+            .groupby(
+                ["Month","Category"]
+            )["Installs"]
+
+            .sum()
+
+            .reset_index()
+
+        )
+
+        # -----------------------------
+        # Growth %
+        # -----------------------------
+        monthly["Growth"] = (
+
+            monthly
+
+            .groupby("Category")["Installs"]
+
+            .pct_change()
+
+            *100
+
+        )
+
+        growth = monthly[
+            monthly["Growth"] > 20
+        ]
+
+        # -----------------------------
+        # Line Chart
+        # -----------------------------
+        fig = px.line(
+
+            monthly,
+
+            x="Month",
+
+            y="Installs",
+
+            color="Category",
+
+            markers=True,
+
+            title="Monthly Install Trend"
+
+        )
+
+        # Highlight Growth >20%
+
+        for _, row in growth.iterrows():
+
+            fig.add_vrect(
+
+                x0=row["Month"],
+
+                x1=row["Month"],
+
+                fillcolor="green",
+
+                opacity=0.20,
+
+                line_width=0
+
+            )
+
+        fig.update_layout(
+
+            template="plotly_white",
+
+            xaxis_title="Month",
+
+            yaxis_title="Total Installs"
+
+        )
+
+        st.plotly_chart(
+            fig,
+            use_container_width=True
+        )
+
+    else:
+
+        st.info(
+            "⏰ This graph is available only between 6:00 PM and 9:00 PM IST."
+        )
+
 if menu == "Task 5":
     st.header("📋 Task 5")
     st.info("Coming Soon")
